@@ -1,15 +1,13 @@
 package com.myorg;
 
 import software.amazon.awscdk.Duration;
-import software.amazon.awscdk.services.iam.AccountPrincipal;
-import software.amazon.awscdk.services.iam.AccountRootPrincipal;
-import software.amazon.awscdk.services.iam.PolicyDocument;
-import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.iam.*;
 import software.amazon.awscdk.services.sns.Subscription;
 import software.amazon.awscdk.services.sns.SubscriptionProtocol;
 import software.amazon.awscdk.services.sns.Topic;
 import software.amazon.awscdk.services.sns.TopicPolicy;
 import software.amazon.awscdk.services.sqs.Queue;
+import software.amazon.awscdk.services.sqs.QueuePolicy;
 import software.constructs.Construct;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
@@ -36,29 +34,29 @@ public class FifoStack extends Stack {
                 .topicName("userreg")
                 .build();
 
-        TopicPolicy topicPolicy = TopicPolicy.Builder.create(this, "topicPolicy")
-                .topics(List.of(userRegistration))
-                .build();
-
-        topicPolicy.getDocument().addStatements(PolicyStatement.Builder.create()
-            .actions(List.of("sns:Subscribe"))
-                .principals(List.of(new AccountPrincipal(this.getAccount())))
-                .resources(List.of(userRegistration.getTopicArn()))
-                .build()
-        );
-
         Queue sub1queue = Queue.Builder.create(this, "sub1Queue")
                 .fifo(true)
                 .queueName("sub1.fifo")
                 .visibilityTimeout(Duration.millis(30000))
                 .build();
 
+        QueuePolicy sub1QueuePolicy = QueuePolicy.Builder.create(this, "sub1QueuePolicy")
+                .queues(List.of(sub1queue))
+                .build();
+
+        sub1QueuePolicy.getDocument().addStatements(
+                PolicyStatement.Builder.create()
+                        .actions(List.of("sqs:SendMessage"))
+                        .principals(List.of(new ServicePrincipal("sns.amazonaws.com")))
+                        .resources(List.of(sub1queue.getQueueArn()))
+                        .build()
+        );
+
         Subscription sub1 = Subscription.Builder.create(this, "sub1")
                 .protocol(SubscriptionProtocol.SQS)
                 .endpoint(sub1queue.getQueueArn())
                 .topic(userRegistration)
                 .build();
-
 
 
     }
