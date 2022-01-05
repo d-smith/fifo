@@ -1,11 +1,11 @@
 package com.myorg;
 
+import software.amazon.awscdk.CfnOutput;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.services.iam.*;
 import software.amazon.awscdk.services.sns.Subscription;
 import software.amazon.awscdk.services.sns.SubscriptionProtocol;
 import software.amazon.awscdk.services.sns.Topic;
-import software.amazon.awscdk.services.sns.TopicPolicy;
 import software.amazon.awscdk.services.sqs.Queue;
 import software.amazon.awscdk.services.sqs.QueuePolicy;
 import software.constructs.Construct;
@@ -32,6 +32,7 @@ public class FifoStack extends Stack {
                 .fifo(true)
                 .displayName("userreg")
                 .topicName("userreg")
+                .contentBasedDeduplication(true)
                 .build();
 
         Queue sub1queue = Queue.Builder.create(this, "sub1Queue")
@@ -58,6 +59,14 @@ public class FifoStack extends Stack {
                 .topic(userRegistration)
                 .build();
 
+        CfnOutput.Builder.create(this, "topicArn")
+                .value(userRegistration.getTopicArn())
+                .description("user registration topic arn")
+                .build();
 
+        CfnOutput.Builder.create(this, "s1QueueUrl")
+                .value(sub1queue.getQueueUrl())
+                .description("subscription 1 queue url")
+                .build();
     }
 }
