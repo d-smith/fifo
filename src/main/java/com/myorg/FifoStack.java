@@ -28,10 +28,10 @@ public class FifoStack extends Stack {
         // Can a fifo queue subscribe to multiple fifo topics?
         // Message dedup
 
-        Topic userRegistration = Topic.Builder.create(this, "userregTopic")
+        Topic fifoTopic1 = Topic.Builder.create(this, "fifoTopic1")
                 .fifo(true)
-                .displayName("userreg")
-                .topicName("userreg")
+                .displayName("fifoTopic1")
+                .topicName("fifoTopic1")
                 .contentBasedDeduplication(true)
                 .build();
 
@@ -56,12 +56,12 @@ public class FifoStack extends Stack {
         Subscription sub1 = Subscription.Builder.create(this, "sub1")
                 .protocol(SubscriptionProtocol.SQS)
                 .endpoint(sub1queue.getQueueArn())
-                .topic(userRegistration)
+                .topic(fifoTopic1)
                 .build();
 
-        CfnOutput.Builder.create(this, "topicArn")
-                .value(userRegistration.getTopicArn())
-                .description("user registration topic arn")
+        CfnOutput.Builder.create(this, "fifoTopic1Arn")
+                .value(fifoTopic1.getTopicArn())
+                .description("fifoTopic1 arn")
                 .build();
 
         CfnOutput.Builder.create(this, "s1QueueUrl")
