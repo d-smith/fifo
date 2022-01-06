@@ -35,6 +35,13 @@ public class FifoStack extends Stack {
                 .contentBasedDeduplication(true)
                 .build();
 
+        Topic fifoTopic2 = Topic.Builder.create(this, "fifoTopic2")
+                .fifo(true)
+                .displayName("fifoTopic2")
+                .topicName("fifoTopic2")
+                .contentBasedDeduplication(true)
+                .build();
+
         Queue sub1queue = Queue.Builder.create(this, "sub1Queue")
                 .fifo(true)
                 .queueName("sub1.fifo")
@@ -59,9 +66,20 @@ public class FifoStack extends Stack {
                 .topic(fifoTopic1)
                 .build();
 
+        Subscription sub2 = Subscription.Builder.create(this, "sub2")
+                .protocol(SubscriptionProtocol.SQS)
+                .endpoint(sub1queue.getQueueArn())
+                .topic(fifoTopic2)
+                .build();
+
         CfnOutput.Builder.create(this, "fifoTopic1Arn")
                 .value(fifoTopic1.getTopicArn())
                 .description("fifoTopic1 arn")
+                .build();
+
+        CfnOutput.Builder.create(this, "fifoTopic2Arn")
+                .value(fifoTopic2.getTopicArn())
+                .description("fifoTopic2 arn")
                 .build();
 
         CfnOutput.Builder.create(this, "s1QueueUrl")
