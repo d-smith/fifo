@@ -3,9 +3,7 @@ package com.myorg;
 import software.amazon.awscdk.CfnOutput;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.services.iam.*;
-import software.amazon.awscdk.services.sns.Subscription;
-import software.amazon.awscdk.services.sns.SubscriptionProtocol;
-import software.amazon.awscdk.services.sns.Topic;
+import software.amazon.awscdk.services.sns.*;
 import software.amazon.awscdk.services.sqs.Queue;
 import software.amazon.awscdk.services.sqs.QueuePolicy;
 import software.constructs.Construct;
@@ -13,6 +11,7 @@ import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
 
 import java.util.List;
+import java.util.Map;
 
 public class FifoStack extends Stack {
     public FifoStack(final Construct scope, final String id) {
@@ -78,6 +77,13 @@ public class FifoStack extends Stack {
                 .protocol(SubscriptionProtocol.SQS)
                 .endpoint(sub1queue.getQueueArn())
                 .topic(fifoTopic2)
+                .filterPolicy(Map.of(
+                        "color", SubscriptionFilter.stringFilter(
+                                StringConditions.builder()
+                                        .allowlist(List.of("red","blue","green"))
+                                        .build()
+                        )
+                ))
                 .build();
 
 
