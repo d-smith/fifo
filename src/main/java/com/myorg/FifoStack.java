@@ -4,6 +4,7 @@ import software.amazon.awscdk.CfnOutput;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.services.iam.*;
 import software.amazon.awscdk.services.sns.*;
+import software.amazon.awscdk.services.sqs.DeadLetterQueue;
 import software.amazon.awscdk.services.sqs.Queue;
 import software.amazon.awscdk.services.sqs.QueuePolicy;
 import software.constructs.Construct;
@@ -48,11 +49,21 @@ public class FifoStack extends Stack {
                 .topicName("topic3")
                 .build();
 
+        Queue sub1dlq = Queue.Builder.create(this, "sub1dlq")
+                .fifo(true)
+                .queueName("sub1dlq.fifo")
+                .visibilityTimeout(Duration.millis(30000))
+                .build();
+
 
         Queue sub1queue = Queue.Builder.create(this, "sub1Queue")
                 .fifo(true)
                 .queueName("sub1.fifo")
                 .visibilityTimeout(Duration.millis(30000))
+                .deadLetterQueue(DeadLetterQueue.builder()
+                        .queue(sub1dlq)
+                        .maxReceiveCount(3)
+                        .build())
                 .build();
 
         QueuePolicy sub1QueuePolicy = QueuePolicy.Builder.create(this, "sub1QueuePolicy")
